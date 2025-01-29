@@ -67,7 +67,7 @@ class DefaultCurrencyRepository @Inject constructor(private val database: AppDat
             if (allConversions.containsKey(currency)) {
                 emitConversionsFromMap(currency)
             }
-            fetchFromNetworkToDB()
+            fetchConversionsFromNetworkToDB()
             populateAllConversionsFromDB()
             if (allConversions.containsKey(currency)) {
                 emitConversionsFromMap(currency)
@@ -120,7 +120,7 @@ class DefaultCurrencyRepository @Inject constructor(private val database: AppDat
         }
     }
 
-    private suspend fun fetchFromNetworkToDB() {
+    private suspend fun fetchConversionsFromNetworkToDB() {
         Timber.i("Getting conversions from network")
         val conversionsFromNetwork = dataSource.getConversions()
         val conversionsToDB: MutableList<ConversionDBModel> = mutableListOf()

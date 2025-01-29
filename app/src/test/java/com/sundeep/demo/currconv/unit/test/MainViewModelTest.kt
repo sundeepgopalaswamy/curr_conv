@@ -29,12 +29,11 @@ class MainViewModelTest {
 
     @Before
     fun setup() {
-
+        viewModel = MainViewModel(respository)
     }
 
     @Test
     fun `getAllCurrencies should update allCurrencies`() {
-        viewModel = MainViewModel(respository)
         val currencies = viewModel.allCurrencies.value
         assert(currencies.size == 2)
         assert(currencies[0].name == "n1")
@@ -44,7 +43,6 @@ class MainViewModelTest {
 
     @Test
     fun `updateCurrency should update curCurrencyIndex`() {
-        viewModel = MainViewModel(respository)
         assert(viewModel.allCurrencies.value.size == 2)
         viewModel.updateCurrency(0)
         assert(viewModel.curCurrencyIndex.value == 0)
@@ -54,7 +52,6 @@ class MainViewModelTest {
 
     @Test
     fun `getConversions should update conversions`() {
-        viewModel = MainViewModel(respository)
         viewModel.updateCurrency(0)
         var conversions = viewModel.conversions.value
         assert(conversions.size == 1)
