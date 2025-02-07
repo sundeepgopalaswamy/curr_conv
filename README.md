@@ -1,6 +1,6 @@
 # Currency Convert
 
-This is a sample project which demos a good Android app architecture using Kotlin flows and Compose. It also have view implementation. Use MainActivity.USE_COMPOSE to switch between compose and view.
+This is a sample project which demos a good Android app architecture using Kotlin flows and Compose. It also have view implementation. Use `MainActivity.USE_COMPOSE` to switch between compose and view.
 
 ## Architecture components
 
