@@ -43,8 +43,6 @@ import com.sundeep.demo.currconv.ui.viewmodel.MainViewModel
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.Currency
-import java.util.Locale
 
 class MainCompose {
     private lateinit var mainViewModel: MainViewModel
@@ -54,25 +52,14 @@ class MainCompose {
         mainViewModel = viewModel
         if (viewModel.dataloaded.collectAsState().value) {
             Timber.i("Data available for rendering")
-            if (viewModel.curCurrencyIndex.collectAsState().value == -1) {
-                val currentLocale = Locale.getDefault()
-                val currency = Currency.getInstance(currentLocale)
-                val currencyCode = currency.currencyCode
-                val currencyIndex = viewModel.getCurrencyModelIndex(currencyCode)
-                val index = when (currencyIndex) {
-                    -1 -> 0
-                    else -> {
-                        currencyIndex
-                    }
-                }
-                viewModel.updateCurrency(index)
+            viewModel.curCurrency.collectAsState().value?.let {
+                MainScreenRender(
+                    modifier = modifier,
+                    currencies = viewModel.allCurrencies.collectAsState().value,
+                    curCurrency = it,
+                    conversions = viewModel.conversions.collectAsState().value
+                )
             }
-            MainScreenRender(
-                modifier = modifier,
-                currencies = viewModel.allCurrencies.collectAsState().value,
-                curCurrencyIndex = viewModel.curCurrencyIndex.collectAsState().value,
-                conversions = viewModel.conversions.collectAsState().value
-            )
         } else {
             Timber.i("No data available, so showing loading")
             ShowLoadingScreen(modifier)
@@ -96,14 +83,14 @@ class MainCompose {
     fun MainScreenRender(
         modifier: Modifier,
         currencies: List<CurrencyModel>,
-        curCurrencyIndex: Int,
+        curCurrency: CurrencyModel,
         conversions: List<ConversionPairModel>
     ) {
         Column(modifier = modifier.background(color = MaterialTheme.colorScheme.background)) {
             MainCurrDropDown(
                 modifier = Modifier,
                 currencies = currencies,
-                curCurrencyIndex = curCurrencyIndex
+                curCurrency = curCurrency
             )
             ConversionList(
                 modifier = Modifier,
@@ -117,14 +104,11 @@ class MainCompose {
     fun MainCurrDropDown(
         modifier: Modifier = Modifier,
         currencies: List<CurrencyModel>,
-        curCurrencyIndex: Int = 0
+        curCurrency: CurrencyModel
     ) {
-        Timber.i("Rendering of dropdown called with ${currencies.size} currencies with $curCurrencyIndex index")
-        if (currencies.isEmpty() || curCurrencyIndex < 0 || curCurrencyIndex >= currencies.size) {
-            return
-        }
+        Timber.i("Rendering of dropdown called with ${currencies.size} currencies with ${curCurrency.name}")
         var expanded by remember { mutableStateOf(false) }
-        var selectedOption by remember { mutableStateOf(currencies[curCurrencyIndex]) }
+        var selectedOption by remember { mutableStateOf(curCurrency) }
 
         ExposedDropdownMenuBox(
             modifier = modifier,
@@ -161,12 +145,12 @@ class MainCompose {
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
-                currencies.forEachIndexed { index, currency ->
+                currencies.forEach { currency ->
                     DropdownMenuItem(
                         text = { GetCurrencyView(currency = currency) },
                         onClick = {
                             selectedOption = currency
-                            onCurrencyChanged(index)
+                            onCurrencyChanged(currency)
                             expanded = false
                         }
                     )
@@ -236,18 +220,19 @@ class MainCompose {
         }
     }
 
-    private fun onCurrencyChanged(newIndex: Int) {
-        mainViewModel.updateCurrency(newIndex)
+    private fun onCurrencyChanged(currency: CurrencyModel) {
+        mainViewModel.updateCurrency(currency)
     }
 
     @Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_NO)
     @Composable
     fun MainPreviewDefault() {
         CurrencyConverterTheme {
+            val currencies = getSampleCurrencies()
             MainScreenRender(
                 modifier = Modifier,
-                currencies = getSampleCurrencies(),
-                curCurrencyIndex = 0,
+                currencies = currencies,
+                curCurrency = currencies[0],
                 conversions = getSampleConversions()
             )
         }
@@ -257,10 +242,11 @@ class MainCompose {
     @Composable
     fun MainPreviewNight() {
         CurrencyConverterTheme {
+            val currencies = getSampleCurrencies()
             MainScreenRender(
                 modifier = Modifier,
-                currencies = getSampleCurrencies(),
-                curCurrencyIndex = 0,
+                currencies = currencies,
+                curCurrency = currencies[0],
                 conversions = getSampleConversions()
             )
         }
@@ -270,10 +256,11 @@ class MainCompose {
     @Composable
     fun MainPreviewLandscape() {
         CurrencyConverterTheme {
+            val currencies = getSampleCurrencies()
             MainScreenRender(
                 modifier = Modifier,
-                currencies = getSampleCurrencies(),
-                curCurrencyIndex = 0,
+                currencies = currencies,
+                curCurrency = currencies[0],
                 conversions = getSampleConversions()
             )
         }

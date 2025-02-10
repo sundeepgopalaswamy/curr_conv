@@ -1,5 +1,6 @@
 package com.sundeep.demo.currconv.data
 
+import com.sundeep.demo.currconv.data.datasource.PreferencesDataSource
 import com.sundeep.demo.currconv.data.datasource.RemoteDataSource
 import com.sundeep.demo.currconv.data.models.ConversionDBModel
 import com.sundeep.demo.currconv.data.models.ConversionPairModel
@@ -13,13 +14,16 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 
-class DefaultCurrencyRepository @Inject constructor(private val database: AppDatabase) :
+class DefaultCurrencyRepository @Inject constructor(
+    private val database: AppDatabase,
+    private val dataSource: RemoteDataSource,
+    private val preferencesDataSource: PreferencesDataSource
+) :
     CurrencyRepository {
     private var currencies: List<CurrencyModel> = emptyList()
     private val allConversions: MutableMap<CurrencyModel, MutableMap<CurrencyModel, Double>> =
         HashMap()
 
-    private val dataSource: RemoteDataSource = RemoteDataSource()
     override fun getAllCurrencies(): Flow<List<CurrencyModel>> {
         return flow {
             if (currencies.isNotEmpty()) {
@@ -40,7 +44,7 @@ class DefaultCurrencyRepository @Inject constructor(private val database: AppDat
         Timber.i("Inserted currencies to DB")
     }
 
-    private suspend fun getCurrenciesFromNetwork(): MutableList<CurrencyModel> {
+    private suspend fun getCurrenciesFromNetwork(): List<CurrencyModel> {
         Timber.i("Getting currencies from network")
         val unformattedCurrencies = withContext(Dispatchers.IO) { dataSource.getCurrencies() }
         val allCurrencies = mutableListOf<CurrencyModel>()
@@ -48,13 +52,13 @@ class DefaultCurrencyRepository @Inject constructor(private val database: AppDat
         unformattedCurrencies.forEach { rawData ->
             allCurrencies.add(CurrencyModel(rawData[0], rawData[1], rawData[2]))
         }
-        return allCurrencies
+        return allCurrencies.sortedBy { it.name }
     }
 
     private suspend fun getCurrenciesFromDB(): List<CurrencyModel> {
         Timber.i("Getting currencies from DB")
         val currencyDao = database.currencyDao
-        return withContext(Dispatchers.IO) { currencyDao.getAllCurrencies() }
+        return withContext(Dispatchers.IO) { currencyDao.getAllCurrencies() }.sortedBy { it.name }
     }
 
     override fun getConversions(currency: CurrencyModel): Flow<List<ConversionPairModel>> {
@@ -75,16 +79,38 @@ class DefaultCurrencyRepository @Inject constructor(private val database: AppDat
         }
     }
 
+    override fun setDefaultCurrency(currency: CurrencyModel) {
+        preferencesDataSource.setDefaultCurrency(currency.abb)
+    }
+
+    override fun getDefaultCurrency(): Flow<CurrencyModel?> {
+        return flow {
+            if (currencies.isNotEmpty()) {
+                val defaultCurrency = preferencesDataSource.getDefaultCurrency()
+                defaultCurrency?.let {
+                    // TODO: Improve search logic to better than Linear.
+                    currencies.forEach {
+                        if (it.abb == defaultCurrency) {
+                            emit(it)
+                            return@flow
+                        }
+                    }
+                }
+            }
+            emit(null)
+        }
+    }
+
     private suspend fun FlowCollector<List<ConversionPairModel>>.emitConversionsFromMap(
         currency: CurrencyModel
     ) {
-        allConversions[currency]?.let {
-            Timber.i("Emitting ${it.size} conversions from Map for ${currency.name}")
+        allConversions[currency]?.let { conversionMap ->
+            Timber.i("Emitting ${conversionMap.size} conversions from Map for ${currency.name}")
             val conversions = mutableListOf<ConversionPairModel>()
-            it.forEach { (toCur, rate) ->
+            conversionMap.forEach { (toCur, rate) ->
                 conversions.add(ConversionPairModel(toCur, rate))
             }
-            emit(conversions)
+            emit(conversions.sortedBy { it.toCurrency.name })
         }
     }
 

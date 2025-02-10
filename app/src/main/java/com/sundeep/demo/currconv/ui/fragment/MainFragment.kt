@@ -20,8 +20,6 @@ import com.sundeep.demo.currconv.ui.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.Currency
-import java.util.Locale
 
 @AndroidEntryPoint
 class MainFragment : Fragment() {
@@ -45,7 +43,7 @@ class MainFragment : Fragment() {
                     position: Int,
                     id: Long
                 ) {
-                    viewModel.updateCurrency(position)
+                    viewModel.updateCurrency(viewModel.allCurrencies.value[position])
                     Timber.i("onItemSelected: selected $position")
                 }
 
@@ -73,20 +71,15 @@ class MainFragment : Fragment() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.dataloaded.collect { dataAvailable ->
                     if (dataAvailable) {
-                        binding.currencySpinner.adapter =
-                            CurrencyAdapter(requireContext(), viewModel.allCurrencies.value)
-                        val currentLocale = Locale.getDefault()
-                        val currency = Currency.getInstance(currentLocale)
-                        val currencyCode = currency.currencyCode
-                        val currencyIndex = viewModel.getCurrencyModelIndex(currencyCode)
-                        val index = when (currencyIndex) {
-                            -1 -> 0
-                            else -> {
-                                currencyIndex
+                        val curCurrency = viewModel.curCurrency.value
+                        viewModel.allCurrencies.value.forEachIndexed { index, currencyModel ->
+                            if (currencyModel == curCurrency) {
+                                binding.currencySpinner.adapter =
+                                    CurrencyAdapter(requireContext(), viewModel.allCurrencies.value)
+                                binding.currencySpinner.setSelection(index)
+                                Timber.i("DataLoaded:selected ${curCurrency.name}")
                             }
                         }
-                        Timber.i("DataLoaded:selected $index")
-                        binding.currencySpinner.setSelection(index)
                     }
                 }
             }
