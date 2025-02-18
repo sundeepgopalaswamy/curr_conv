@@ -1,7 +1,6 @@
 package com.sundeep.demo.currconv.unit.test
 
 import com.sundeep.demo.currconv.FakeRepository
-import com.sundeep.demo.currconv.data.CurrencyRepository
 import com.sundeep.demo.currconv.ui.viewmodel.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,41 +24,41 @@ class MainViewModelTest {
 
     private lateinit var viewModel: MainViewModel
 
-    private var respository : CurrencyRepository = FakeRepository()
+    private var repository = FakeRepository()
 
     @Before
     fun setup() {
-        viewModel = MainViewModel(respository)
+        viewModel = MainViewModel(repository)
     }
 
     @Test
     fun `getAllCurrencies should update allCurrencies`() {
         val currencies = viewModel.allCurrencies.value
         assert(currencies.size == 2)
-        assert(currencies[0].name == "n1")
-        assert(currencies[0].abb == "c1")
-        assert(currencies[0].flagUrl == "f1")
+        assert(currencies[0] == FakeRepository.CURRENCY0)
     }
 
     @Test
-    fun `updateCurrency should update curCurrencyIndex`() {
+    fun `updateCurrency should update curCurrency`() {
         assert(viewModel.allCurrencies.value.size == 2)
-        viewModel.updateCurrency(0)
-        assert(viewModel.curCurrencyIndex.value == 0)
-        viewModel.updateCurrency(1)
-        assert(viewModel.curCurrencyIndex.value == 1)
+        viewModel.updateCurrency(viewModel.allCurrencies.value[0])
+        assert(viewModel.curCurrency.value == viewModel.allCurrencies.value[0])
+        assert(repository.savedDefaultCurrency == viewModel.allCurrencies.value[0])
+        viewModel.updateCurrency(viewModel.allCurrencies.value[1])
+        assert(viewModel.curCurrency.value == viewModel.allCurrencies.value[1])
+        assert(repository.savedDefaultCurrency == viewModel.allCurrencies.value[1])
     }
 
     @Test
     fun `getConversions should update conversions`() {
-        viewModel.updateCurrency(0)
+        viewModel.updateCurrency(viewModel.allCurrencies.value[0])
         var conversions = viewModel.conversions.value
         assert(conversions.size == 1)
-        assert(conversions[0].toCurrency.name == "n2")
-        viewModel.updateCurrency(1)
+        assert(conversions[0].toCurrency == FakeRepository.CURRENCY1)
+        viewModel.updateCurrency(viewModel.allCurrencies.value[1])
         conversions = viewModel.conversions.value
         assert(conversions.size == 1)
-        assert(conversions[0].toCurrency.name == "n1")
+        assert(conversions[0].toCurrency == FakeRepository.CURRENCY0)
     }
 }
 
