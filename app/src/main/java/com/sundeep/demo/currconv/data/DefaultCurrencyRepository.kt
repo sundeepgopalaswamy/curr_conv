@@ -12,29 +12,37 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.time.Instant
 import javax.inject.Inject
 
 class DefaultCurrencyRepository @Inject constructor(
     private val database: AppDatabase,
     private val dataSource: RemoteDataSource,
     private val preferencesDataSource: PreferencesDataSource
-) :
-    CurrencyRepository {
+) : CurrencyRepository {
+    companion object {
+        // Used 10sec for testing. In real world this probably would be 5 mins
+        const val CACHING_TIME = 10_000L
+    }
     private var currencies: List<CurrencyModel> = emptyList()
     private val allConversions: MutableMap<CurrencyModel, MutableMap<CurrencyModel, Double>> =
         HashMap()
+    private var lastFetchedCurrencyInMs = 0L
+    private var lastFetchedConversionsInMs = 0L
 
     override fun getAllCurrencies(): Flow<List<CurrencyModel>> {
         return flow {
-            if (currencies.isNotEmpty()) {
-                emit(currencies)
+            if (currencies.isEmpty()) {
+                currencies = getCurrenciesFromDB()
+            }
+            emit(currencies)
+            if (Instant.now().toEpochMilli() - lastFetchedCurrencyInMs < CACHING_TIME) {
                 return@flow
             }
-            currencies = getCurrenciesFromDB()
-            emit(currencies)
 
             currencies = getCurrenciesFromNetwork()
             insertCurrenciesToDB(currencies)
+            lastFetchedCurrencyInMs = Instant.now().toEpochMilli()
             emit(currencies)
         }
     }
@@ -63,19 +71,18 @@ class DefaultCurrencyRepository @Inject constructor(
 
     override fun getConversions(currency: CurrencyModel): Flow<List<ConversionPairModel>> {
         return flow {
-            if (allConversions.containsKey(currency)) {
-                emitConversionsFromMap(currency)
+            if (!allConversions.containsKey(currency)) {
+                populateAllConversionsFromDB()
+            }
+            emitConversionsFromMap(currency)
+            if (Instant.now().toEpochMilli() - lastFetchedConversionsInMs < CACHING_TIME) {
                 return@flow
             }
-            populateAllConversionsFromDB()
-            if (allConversions.containsKey(currency)) {
-                emitConversionsFromMap(currency)
-            }
+
             fetchConversionsFromNetworkToDB()
+            lastFetchedConversionsInMs = Instant.now().toEpochMilli()
             populateAllConversionsFromDB()
-            if (allConversions.containsKey(currency)) {
-                emitConversionsFromMap(currency)
-            }
+            emitConversionsFromMap(currency)
         }
     }
 

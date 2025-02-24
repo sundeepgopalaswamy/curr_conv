@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -71,11 +72,15 @@ class MainCompose {
         Box(
             modifier = modifier.fillMaxSize()
         ) {
-            Text(
-                modifier = Modifier.align(Alignment.Center),
-                text = stringResource(id = R.string.loading),
-                style = MaterialTheme.typography.titleLarge
-            )
+            Row(modifier = Modifier.align(Alignment.Center)) {
+                Text(
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    text = stringResource(id = R.string.loading),
+                    style = MaterialTheme.typography.titleLarge
+                )
+                CircularProgressIndicator(modifier = Modifier.padding(8.dp))
+            }
+
         }
     }
 
@@ -273,6 +278,14 @@ class MainCompose {
             GetCurrencyView(
                 currency = getSampleCurrencies()[0]
             )
+        }
+    }
+
+    @Preview(showBackground = true)
+    @Composable
+    fun LoadingViewPreview() {
+        CurrencyConverterTheme {
+            ShowLoadingScreen(modifier = Modifier)
         }
     }
 
