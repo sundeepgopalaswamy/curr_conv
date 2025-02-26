@@ -74,6 +74,10 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.glide)
     implementation(libs.material)
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.work.testing)
+    implementation(libs.androidx.hilt.common)
+    implementation(libs.androidx.hilt.work)
     testImplementation(libs.junit)
     testImplementation(libs.jetbrains.kotlinx.coroutines.test)
     annotationProcessor(libs.glide.compiler)
@@ -85,4 +89,5 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     kapt(libs.hilt.compiler)
     kapt(libs.androidx.room.compiler)
+    kapt(libs.androidx.hilt.compiler)
 }

@@ -1,11 +1,19 @@
 package com.sundeep.demo.currconv.data
 
+import android.content.Context
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.sundeep.demo.currconv.data.datasource.PreferencesDataSource
 import com.sundeep.demo.currconv.data.datasource.RemoteDataSource
-import com.sundeep.demo.currconv.data.models.ConversionDBModel
 import com.sundeep.demo.currconv.data.models.ConversionPairModel
 import com.sundeep.demo.currconv.data.models.CurrencyModel
 import com.sundeep.demo.currconv.room.AppDatabase
+import com.sundeep.demo.currconv.util.fetchConversionsFromNetworkToDB
+import com.sundeep.demo.currconv.util.fetchCurrenciesFromNetworkToDB
+import com.sundeep.demo.currconv.workers.OfflineSyncWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
@@ -13,22 +21,26 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.time.Instant
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class DefaultCurrencyRepository @Inject constructor(
+    context: Context,
     private val database: AppDatabase,
     private val dataSource: RemoteDataSource,
     private val preferencesDataSource: PreferencesDataSource
 ) : CurrencyRepository {
     companion object {
-        // Used 10sec for testing. In real world this probably would be 5 mins
+        // Used 10sec for testing. In real world this probably would be 5 minutes
         const val CACHING_TIME = 10_000L
+        const val OFFLINE_SYNC_WORK_NAME = "offline_sync_work"
     }
+
     private var currencies: List<CurrencyModel> = emptyList()
     private val allConversions: MutableMap<CurrencyModel, MutableMap<CurrencyModel, Double>> =
         HashMap()
-    private var lastFetchedCurrencyInMs = 0L
-    private var lastFetchedConversionsInMs = 0L
+    private val workManager = WorkManager.getInstance(context)
+    private val cache = Cache()
 
     override fun getAllCurrencies(): Flow<List<CurrencyModel>> {
         return flow {
@@ -36,31 +48,14 @@ class DefaultCurrencyRepository @Inject constructor(
                 currencies = getCurrenciesFromDB()
             }
             emit(currencies)
-            if (Instant.now().toEpochMilli() - lastFetchedCurrencyInMs < CACHING_TIME) {
+            if (cache.isNotStaleCurrencyCache()) {
                 return@flow
             }
 
-            currencies = getCurrenciesFromNetwork()
-            insertCurrenciesToDB(currencies)
-            lastFetchedCurrencyInMs = Instant.now().toEpochMilli()
+            currencies = fetchCurrenciesFromNetworkToDB(dataSource, database)
+            cache.updateLastFetchedCurrencyTime()
             emit(currencies)
         }
-    }
-
-    private suspend fun insertCurrenciesToDB(allCurrencies: List<CurrencyModel>) {
-        withContext(Dispatchers.IO) { database.currencyDao.insertAllCurrencies(allCurrencies) }
-        Timber.i("Inserted currencies to DB")
-    }
-
-    private suspend fun getCurrenciesFromNetwork(): List<CurrencyModel> {
-        Timber.i("Getting currencies from network")
-        val unformattedCurrencies = withContext(Dispatchers.IO) { dataSource.getCurrencies() }
-        val allCurrencies = mutableListOf<CurrencyModel>()
-
-        unformattedCurrencies.forEach { rawData ->
-            allCurrencies.add(CurrencyModel(rawData[0], rawData[1], rawData[2]))
-        }
-        return allCurrencies.sortedBy { it.name }
     }
 
     private suspend fun getCurrenciesFromDB(): List<CurrencyModel> {
@@ -75,12 +70,12 @@ class DefaultCurrencyRepository @Inject constructor(
                 populateAllConversionsFromDB()
             }
             emitConversionsFromMap(currency)
-            if (Instant.now().toEpochMilli() - lastFetchedConversionsInMs < CACHING_TIME) {
+            if (cache.isNotStaleConversionsCache()) {
                 return@flow
             }
 
-            fetchConversionsFromNetworkToDB()
-            lastFetchedConversionsInMs = Instant.now().toEpochMilli()
+            fetchConversionsFromNetworkToDB(dataSource, database)
+            cache.updateLastFetchedConversionTime()
             populateAllConversionsFromDB()
             emitConversionsFromMap(currency)
         }
@@ -153,21 +148,37 @@ class DefaultCurrencyRepository @Inject constructor(
         }
     }
 
-    private suspend fun fetchConversionsFromNetworkToDB() {
-        Timber.i("Getting conversions from network")
-        val conversionsFromNetwork = dataSource.getConversions()
-        val conversionsToDB: MutableList<ConversionDBModel> = mutableListOf()
+    private fun scheduleOfflineSync() {
+        val constraints = Constraints.Builder().setRequiresBatteryNotLow(true)
+            .setRequiredNetworkType(NetworkType.UNMETERED).build()
+        val workRequest =
+            PeriodicWorkRequestBuilder<OfflineSyncWorker>(3, TimeUnit.HOURS).setConstraints(
+                constraints
+            ).build()
+        workManager.enqueueUniquePeriodicWork(
+            OFFLINE_SYNC_WORK_NAME, ExistingPeriodicWorkPolicy.UPDATE, workRequest
+        )
+    }
 
-        conversionsFromNetwork.forEach { convList ->
-            conversionsToDB.add(
-                ConversionDBModel(
-                    fromCurrency = convList[0],
-                    toCurrency = convList[1],
-                    rate = convList[2].toDouble()
-                )
-            )
+    private inner class Cache {
+        private var lastFetchedCurrencyInMs = 0L
+        private var lastFetchedConversionsInMs = 0L
+
+        fun isNotStaleCurrencyCache(): Boolean {
+            return Instant.now().toEpochMilli() - lastFetchedCurrencyInMs < CACHING_TIME
         }
-        withContext(Dispatchers.IO) { database.conversionDao.insertAllConversions(conversionsToDB) }
-        Timber.i("Inserted ${conversionsToDB.size} conversions to DB")
+
+        fun isNotStaleConversionsCache(): Boolean {
+            return Instant.now().toEpochMilli() - lastFetchedConversionsInMs < CACHING_TIME
+        }
+
+        fun updateLastFetchedCurrencyTime() {
+            lastFetchedCurrencyInMs = Instant.now().toEpochMilli()
+        }
+
+        fun updateLastFetchedConversionTime() {
+            lastFetchedConversionsInMs = Instant.now().toEpochMilli()
+            scheduleOfflineSync()
+        }
     }
 }

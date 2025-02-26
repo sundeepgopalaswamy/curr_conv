@@ -6,6 +6,7 @@ import com.sundeep.demo.currconv.data.CurrencyRepository
 import com.sundeep.demo.currconv.data.DefaultCurrencyRepository
 import com.sundeep.demo.currconv.data.datasource.LocalPreferencesDataSource
 import com.sundeep.demo.currconv.data.datasource.PreferencesDataSource
+import com.sundeep.demo.currconv.data.datasource.RemoteDataSource
 import com.sundeep.demo.currconv.data.datasource.SimulatedRemoteDataSource
 import com.sundeep.demo.currconv.room.AppDatabase
 import dagger.Module
@@ -21,12 +22,15 @@ class AppModule {
     @Provides
     @Singleton
     fun provideCurrencyRepository(
+        @ApplicationContext context: Context,
         database: AppDatabase,
+        remoteDataSource: RemoteDataSource,
         preferencesDataSource: PreferencesDataSource
     ): CurrencyRepository {
         return DefaultCurrencyRepository(
+            context,
             database,
-            SimulatedRemoteDataSource(),
+            remoteDataSource,
             preferencesDataSource
         )
     }
@@ -39,6 +43,12 @@ class AppModule {
             AppDatabase::class.java,
             "currency_database.sqlite"
         ).build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRemoteDataSource(): RemoteDataSource {
+        return SimulatedRemoteDataSource()
     }
 
     @Provides
