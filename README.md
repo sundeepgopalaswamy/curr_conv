@@ -24,4 +24,4 @@ This is a sample project which demos a good Android app architecture using Kotli
 
 ### Landscape with Dark theme
 
-<img src="resources/landscape.gif" width=1200 height=540 alt="Landscape Screenshot">
+<img src="resources/landscape.gif" width=1000 alt="Landscape Screenshot">
