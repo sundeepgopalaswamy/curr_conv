@@ -7,6 +7,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import com.sundeep.demo.currconv.databinding.ActivityMainBinding
@@ -36,6 +38,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
     }
 
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     private fun useComposeUI() {
         val mainViewModel = ViewModelProvider(this)[MainViewModel::class.java]
         setContent {
@@ -43,9 +46,11 @@ class MainActivity : AppCompatActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                 ) { innerPadding ->
+                    val windowSizeClass = calculateWindowSizeClass(activity = this)
                     MainCompose().MainScreen(
                         modifier = Modifier.padding(innerPadding),
-                        viewModel = mainViewModel
+                        viewModel = mainViewModel,
+                        windowSize = windowSizeClass
                     )
                 }
             }

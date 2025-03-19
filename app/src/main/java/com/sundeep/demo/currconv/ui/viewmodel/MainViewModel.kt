@@ -22,12 +22,18 @@ class MainViewModel @Inject constructor(@get:VisibleForTesting(otherwise = Visib
     ViewModel() {
     private val _allCur = MutableStateFlow<List<CurrencyModel>>(emptyList())
     private val _conversions = MutableStateFlow<List<ConversionPairModel>>(emptyList())
-    private var _curCurrency = MutableStateFlow<CurrencyModel?>(null)
+    private var _fromCurrency = MutableStateFlow<CurrencyModel?>(null)
+    private var _toCurrency = MutableStateFlow<CurrencyModel?>(null)
     private val _dataloaded = MutableStateFlow(false)
+    private var curConverterValue = 1.0
     val allCurrencies: StateFlow<List<CurrencyModel>> get() = _allCur
     val conversions: StateFlow<List<ConversionPairModel>> get() = _conversions
-    val curCurrency: StateFlow<CurrencyModel?> get() = _curCurrency
+    val fromCurrency: StateFlow<CurrencyModel?> get() = _fromCurrency
+    val toCurrency: StateFlow<CurrencyModel?> get() = _toCurrency
     val dataloaded: StateFlow<Boolean> get() = _dataloaded
+    val fromCurrencyAmount = MutableStateFlow(0.0)
+    val toCurrencyAmount = MutableStateFlow(0.0)
+
 
     init {
         viewModelScope.launch {
@@ -36,21 +42,35 @@ class MainViewModel @Inject constructor(@get:VisibleForTesting(otherwise = Visib
                 if (data.isNotEmpty()) {
                     _allCur.value = data
                     viewModelScope.launch {
-                        repository.getDefaultCurrency().collect { defaultCurrency ->
-                            defaultCurrency?.let {
-                                updateCurrency(it)
+                        repository.getFromCurrency().collect { fromCurrencyModel ->
+                            fromCurrencyModel?.let {
+                                updateFromCurrency(it)
                             } ?: run {
                                 val currentLocale = Locale.getDefault()
                                 val currency = Currency.getInstance(currentLocale)
                                 val currencyCode = currency.currencyCode
                                 val localeCurrency = getCurrencyModel(currencyCode)
                                 localeCurrency?.let {
-                                    updateCurrency(it)
+                                    updateFromCurrency(it)
                                 } ?: run {
-                                    updateCurrency(allCurrencies.value[0])
+                                    updateFromCurrency(allCurrencies.value[0])
                                 }
                             }
-                            _dataloaded.value = true
+                            viewModelScope.launch {
+                                repository.getToCurrency().collect { toCurrencyModel ->
+                                    toCurrencyModel?.let {
+                                        updateToCurrency(toCurrencyModel)
+                                    } ?: run {
+                                        // Set to either first or second conversion currency.
+                                        val toCurr = when(allCurrencies.value[0] != fromCurrency.value) {
+                                            true -> allCurrencies.value[0]
+                                            false -> allCurrencies.value[1]
+                                        }
+                                        updateToCurrency(toCurr)
+                                    }
+                                    _dataloaded.value = true
+                                }
+                            }
                         }
                     }
                 }
@@ -58,16 +78,50 @@ class MainViewModel @Inject constructor(@get:VisibleForTesting(otherwise = Visib
         }
     }
 
-    fun updateCurrency(currencyModel: CurrencyModel) {
-        Timber.d("Updating Currency to ${currencyModel.name}")
+    fun updateFromCurrency(currencyModel: CurrencyModel) {
+        if (fromCurrency.value == currencyModel) {
+            return
+        }
+        Timber.d("Updating from currency to ${currencyModel.name}")
 
-        _curCurrency.update { currencyModel }
+        _fromCurrency.update { currencyModel }
+        fromCurrencyAmount.value = 1.0
         viewModelScope.launch {
-            repository.getConversions(currencyModel).collect {
-                _conversions.value = it
+            repository.getConversions(currencyModel).collect { conversionsList ->
+                _conversions.value = conversionsList
+                toCurrency.value?.let {
+                    resetToCurrencyAmount()
+                }
             }
         }
-        repository.setDefaultCurrency(currencyModel)
+        repository.setFromCurrency(currencyModel)
+    }
+
+    fun updateToCurrency(currencyModel: CurrencyModel) {
+        if (toCurrency.value == currencyModel) {
+            return
+        }
+        Timber.d("Updating to currency to ${currencyModel.name}")
+
+        _toCurrency.update { currencyModel }
+        resetToCurrencyAmount()
+        repository.setToCurrency(currencyModel)
+    }
+
+    fun updateFromCurrencyAmount(newValue: Double) {
+        if (fromCurrencyAmount.value == newValue) {
+            return
+        }
+        fromCurrencyAmount.update { newValue }
+        toCurrencyAmount.update { newValue * curConverterValue }
+    }
+
+    fun updateToCurrencyAmount(newValue: Double) {
+        if (toCurrencyAmount.value == newValue) {
+            return
+        }
+        toCurrencyAmount.update { newValue }
+        fromCurrencyAmount.update { newValue * (1 / curConverterValue) }
     }
 
     private fun getCurrencyModel(currencyCode: String): CurrencyModel? {
@@ -77,5 +131,16 @@ class MainViewModel @Inject constructor(@get:VisibleForTesting(otherwise = Visib
             }
         }
         return null
+    }
+
+    private fun resetToCurrencyAmount() {
+        // TODO: Improve search logic to be better than linear
+        conversions.value.forEach { conversionPair ->
+            if (conversionPair.toCurrency == toCurrency.value) {
+                toCurrencyAmount.value = fromCurrencyAmount.value * conversionPair.rate
+                curConverterValue = conversionPair.rate
+                return@forEach
+            }
+        }
     }
 }

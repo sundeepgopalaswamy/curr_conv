@@ -81,26 +81,44 @@ class DefaultCurrencyRepository @Inject constructor(
         }
     }
 
-    override fun setDefaultCurrency(currency: CurrencyModel) {
-        preferencesDataSource.setDefaultCurrency(currency.abb)
+    override fun setFromCurrency(currency: CurrencyModel) {
+        preferencesDataSource.setFromCurrency(currency.abb)
     }
 
-    override fun getDefaultCurrency(): Flow<CurrencyModel?> {
+    override fun getFromCurrency(): Flow<CurrencyModel?> {
         return flow {
-            if (currencies.isNotEmpty()) {
-                val defaultCurrency = preferencesDataSource.getDefaultCurrency()
-                defaultCurrency?.let {
-                    // TODO: Improve search logic to better than Linear.
-                    currencies.forEach {
-                        if (it.abb == defaultCurrency) {
-                            emit(it)
-                            return@flow
-                        }
-                    }
-                }
+            val fromCurrency = preferencesDataSource.getFromCurrency()
+            fromCurrency?.let {
+                emit(getCurrencyModel(it))
+            } ?: run {
+                emit(null)
             }
-            emit(null)
         }
+    }
+
+    override fun setToCurrency(currency: CurrencyModel) {
+        preferencesDataSource.setToCurrency(currency.abb)
+    }
+
+    override fun getToCurrency(): Flow<CurrencyModel?> {
+        return flow {
+            val toCurrency = preferencesDataSource.getToCurrency()
+            toCurrency?.let {
+                emit(getCurrencyModel(it))
+            } ?: run {
+                emit(null)
+            }
+        }
+    }
+
+    private fun getCurrencyModel(currAbb: String): CurrencyModel? {
+        // TODO: Improve search logic to better than Linear.
+        currencies.forEach {
+            if (it.abb == currAbb) {
+                return it
+            }
+        }
+        return null
     }
 
     private suspend fun FlowCollector<List<ConversionPairModel>>.emitConversionsFromMap(

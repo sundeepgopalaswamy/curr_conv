@@ -107,6 +107,16 @@ class SimulatedRemoteDataSource : RemoteDataSource {
                 "ZAR",
                 "https://raw.githubusercontent.com/sundeepgopalaswamy/curr_conv/refs/heads/main/resources/southafrica.png"
             ),
+            listOf(
+                "Israeli New Shekel",
+                "ILS",
+                "https://raw.githubusercontent.com/sundeepgopalaswamy/curr_conv/refs/heads/main/resources/israel.png"
+            ),
+            listOf(
+                "Thai Baht",
+                "THB",
+                "https://raw.githubusercontent.com/sundeepgopalaswamy/curr_conv/refs/heads/main/resources/thailand.png"
+            ),
         )
     }
 
@@ -137,6 +147,8 @@ class SimulatedRemoteDataSource : RemoteDataSource {
             listOf("USD", "SEK", (10.972114 + deciRandom).toString()),
             listOf("USD", "SGD", (1.355113 + deci1Random).toString()),
             listOf("USD", "ZAR", (18.503631 + deciRandom).toString()),
+            listOf("USD", "ILS", (3.668427 + deci1Random).toString()),
+            listOf("USD", "THB", (33.6105 + deciRandom).toString()),
 
             listOf("CNY", "AED", (0.502499 + deci2Random).toString()),
             listOf("CNY", "AUD", (0.218548 + deci2Random).toString()),
@@ -156,6 +168,8 @@ class SimulatedRemoteDataSource : RemoteDataSource {
             listOf("CNY", "SEK", (1.499956 + deci1Random).toString()),
             listOf("CNY", "SGD", (0.18567 + deci2Random).toString()),
             listOf("CNY", "ZAR", (2.539223 + deci1Random).toString()),
+            listOf("CNY", "ILS", (0.507568 + deci2Random).toString()),
+            listOf("CNY", "THB", (4.6490 + deci1Random).toString()),
 
             listOf("INR", "JPY", (1.68 + deci1Random).toString()),
             listOf("INR", "GBP", (0.0091 + deci4Random).toString()),
@@ -174,6 +188,8 @@ class SimulatedRemoteDataSource : RemoteDataSource {
             listOf("INR", "SEK", (0.124725 + deci2Random).toString()),
             listOf("INR", "SGD", (0.015467 + deci3Random).toString()),
             listOf("INR", "ZAR", (0.210452 + deci2Random).toString()),
+            listOf("INR", "ILS", (0.042465 + deci3Random).toString()),
+            listOf("INR", "THB", (0.38795 + deci2Random).toString()),
 
             listOf("GBP", "JPY", (185.185 + deciRandom).toString()),
             listOf("GBP", "EUR", (1.19 + deci1Random).toString()),
@@ -190,6 +206,8 @@ class SimulatedRemoteDataSource : RemoteDataSource {
             listOf("GBP", "SEK", (13.521148 + deciRandom).toString()),
             listOf("GBP", "SGD", (1.677609 + deci1Random).toString()),
             listOf("GBP", "ZAR", (22.808689 + deciRandom).toString()),
+            listOf("GBP", "ILS", (4.7701 + deci1Random).toString()),
+            listOf("GBP", "THB", (43.687 + deciRandom).toString()),
 
             listOf("AUD", "AED", (2.45 + deci1Random).toString()),
             listOf("AUD", "BRL", (3.631446 + deci1Random).toString()),
@@ -206,6 +224,8 @@ class SimulatedRemoteDataSource : RemoteDataSource {
             listOf("AUD", "SEK", (6.855348 + deci1Random).toString()),
             listOf("AUD", "SGD", (0.850098 + deci2Random).toString()),
             listOf("AUD", "ZAR", (11.56614 + deciRandom).toString()),
+            listOf("AUD", "ILS", (2.33348 + deci1Random).toString()),
+            listOf("AUD", "THB", (21.3738 + deciRandom).toString()),
 
             listOf("JPY", "AED", (0.026 + deci3Random).toString()),
             listOf("JPY", "AUD", (0.11 + deci2Random).toString()),
@@ -222,6 +242,8 @@ class SimulatedRemoteDataSource : RemoteDataSource {
             listOf("JPY", "SEK", (0.071925 + deci3Random).toString()),
             listOf("JPY", "SGD", (0.008923 + deci4Random).toString()),
             listOf("JPY", "ZAR", (0.121375 + deci2Random).toString()),
+            listOf("JPY", "ILS", (0.024609 + deci3Random).toString()),
+            listOf("JPY", "THB", (0.2251 + deci2Random).toString()),
 
             listOf("EUR", "AED", (4.06 + deci1Random).toString()),
             listOf("EUR", "BRL", (5.965051 + deci1Random).toString()),
@@ -236,6 +258,8 @@ class SimulatedRemoteDataSource : RemoteDataSource {
             listOf("EUR", "SEK", (11.264 + deciRandom).toString()),
             listOf("EUR", "SGD", (1.39736 + deci1Random).toString()),
             listOf("EUR", "ZAR", (19.0067 + deciRandom).toString()),
+            listOf("EUR", "ILS", (4.008216 + deci1Random).toString()),
+            listOf("EUR", "THB", (36.774 + deciRandom).toString()),
 
             listOf("AED", "BRL", (1.5755 + deci1Random).toString()),
             listOf("AED", "CAD", (0.3901 + deci2Random).toString()),
@@ -249,6 +273,8 @@ class SimulatedRemoteDataSource : RemoteDataSource {
             listOf("AED", "SEK", (2.975042 + deci1Random).toString()),
             listOf("AED", "SGD", (0.368936 + deci2Random).toString()),
             listOf("AED", "ZAR", (5.020069 + deci1Random).toString()),
+            listOf("AED", "ILS", (1.00056 + deci1Random).toString()),
+            listOf("AED", "THB", (9.1478 + deci1Random).toString()),
 
             listOf("BRL", "CAD", (0.247484 + deci2Random).toString()),
             listOf("BRL", "CHF", (0.157397 + deci2Random).toString()),
@@ -261,6 +287,8 @@ class SimulatedRemoteDataSource : RemoteDataSource {
             listOf("BRL", "SEK", (1.888224 + deci1Random).toString()),
             listOf("BRL", "SGD", (0.234128 + deci2Random).toString()),
             listOf("BRL", "ZAR", (3.186579 + deci1Random).toString()),
+            listOf("BRL", "ILS", (0.644128 + deci2Random).toString()),
+            listOf("BRL", "THB", (5.92 + deci1Random).toString()),
 
             listOf("CAD", "CHF", (0.635647 + deci2Random).toString()),
             listOf("CAD", "HKD", (5.43524 + deci1Random).toString()),
@@ -272,6 +300,8 @@ class SimulatedRemoteDataSource : RemoteDataSource {
             listOf("CAD", "SEK", (7.624189 + deci1Random).toString()),
             listOf("CAD", "SGD", (0.94562 + deci2Random).toString()),
             listOf("CAD", "ZAR", (12.868825 + deciRandom).toString()),
+            listOf("CAD", "ILS", (2.563516 + deci1Random).toString()),
+            listOf("CAD", "THB", (23.483631 + deciRandom).toString()),
 
             listOf("CHF", "HKD", (8.5514 + deci1Random).toString()),
             listOf("CHF", "KRW", (1593.117381 + deciRandom).toString()),
@@ -282,6 +312,8 @@ class SimulatedRemoteDataSource : RemoteDataSource {
             listOf("CHF", "SEK", (12.121148 + deciRandom).toString()),
             listOf("CHF", "SGD", (1.4875 + deci1Random).toString()),
             listOf("CHF", "ZAR", (20.234 + deciRandom).toString()),
+            listOf("CHF", "ILS", (4.185756 + deci1Random).toString()),
+            listOf("CHF", "THB", (38.3182 + deciRandom).toString()),
 
             listOf("HKD", "KRW", (186.248283 + deciRandom).toString()),
             listOf("HKD", "MXN", (2.646426 + deci1Random).toString()),
@@ -291,6 +323,8 @@ class SimulatedRemoteDataSource : RemoteDataSource {
             listOf("HKD", "SEK", (1.402529 + deci1Random).toString()),
             listOf("HKD", "SGD", (0.18567 + deci2Random).toString()),
             listOf("HKD", "ZAR", (2.366933 + deci1Random).toString()),
+            listOf("HKD", "ILS", (0.47567 + deci2Random).toString()),
+            listOf("HKD", "THB", (2126.631 + deciRandom).toString()),
 
             listOf("KRW", "MXN", (0.014199 + deci3Random).toString()),
             listOf("KRW", "NOK", (0.007732 + deci4Random).toString()),
@@ -298,6 +332,8 @@ class SimulatedRemoteDataSource : RemoteDataSource {
             listOf("KRW", "RUB", (0.066773 + deci3Random).toString()),
             listOf("KRW", "SEK", (0.007529 + deci4Random).toString()),
             listOf("KRW", "ZAR", (0.012705 + deci3Random).toString()),
+            listOf("KRW", "ILS", (0.002529 + deci4Random).toString()),
+            listOf("KRW", "THB", (0.02317 + deci3Random).toString()),
 
             listOf("MXN", "NOK", (0.544021 + deci2Random).toString()),
             listOf("MXN", "NZD", (0.085972 + deci3Random).toString()),
@@ -305,27 +341,44 @@ class SimulatedRemoteDataSource : RemoteDataSource {
             listOf("MXN", "SEK", (0.529884 + deci2Random).toString()),
             listOf("MXN", "SGD", (0.065751 + deci3Random).toString()),
             listOf("MXN", "ZAR", (0.894088 + deci2Random).toString()),
+            listOf("MXN", "ILS", (0.18567 + deci2Random).toString()),
+            listOf("MXN", "THB", (1.68655 + deci1Random).toString()),
 
             listOf("NOK", "NZD", (0.157898 + deci2Random).toString()),
             listOf("NOK", "RUB", (8.63749 + deci1Random).toString()),
             listOf("NOK", "SEK", (0.974311 + deci2Random).toString()),
             listOf("NOK", "SGD", (0.120841 + deci2Random).toString()),
             listOf("NOK", "ZAR", (1.643649 + deci1Random).toString()),
+            listOf("NOK", "ILS", (0.120841 + deci2Random).toString()),
+            listOf("NOK", "THB", (3.1814 + deci1Random).toString()),
 
             listOf("NZD", "RUB", (54.711799 + deciRandom).toString()),
             listOf("NZD", "SEK", (6.167759 + deci1Random).toString()),
             listOf("NZD", "SGD", (0.765326 + deci2Random).toString()),
             listOf("NZD", "ZAR", (10.403213 + deciRandom).toString()),
+            listOf("NZD", "ILS", (2.13319 + deci1Random).toString()),
+            listOf("NZD", "THB", (19.5502 + deciRandom).toString()),
 
             listOf("RUB", "SEK", (0.112772 + deci2Random).toString()),
             listOf("RUB", "SGD", (0.013985 + deci3Random).toString()),
             listOf("RUB", "ZAR", (0.190261 + deci2Random).toString()),
+            listOf("RUB", "ILS", (0.045985 + deci3Random).toString()),
+            listOf("RUB", "THB", (0.400828 + deci2Random).toString()),
 
             listOf("SEK", "SGD", (0.124024 + deci2Random).toString()),
             listOf("SEK", "ZAR", (1.68733 + deci1Random).toString()),
+            listOf("SEK", "ILS", (0.36564 + deci2Random).toString()),
+            listOf("SEK", "THB", (3.3464 + deci1Random).toString()),
 
             listOf("SGD", "KRW", (1070.884883 + deciRandom).toString()),
             listOf("SGD", "ZAR", (13.600272 + deciRandom).toString()),
+            listOf("SGD", "ILS", (2.76319 + deci1Random).toString()),
+            listOf("SGD", "THB", (25.26234 + deciRandom).toString()),
+
+            listOf("ZAR", "ILS", (0.204024 + deci2Random).toString()),
+            listOf("ZAR", "THB", (1.85567 + deci1Random).toString()),
+
+            listOf("ILS", "THB", (9.164252 + deci1Random).toString()),
         )
     }
 

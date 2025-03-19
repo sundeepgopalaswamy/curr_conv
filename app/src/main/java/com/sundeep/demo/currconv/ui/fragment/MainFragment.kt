@@ -43,7 +43,7 @@ class MainFragment : Fragment() {
                     position: Int,
                     id: Long
                 ) {
-                    viewModel.updateCurrency(viewModel.allCurrencies.value[position])
+                    viewModel.updateFromCurrency(viewModel.allCurrencies.value[position])
                     Timber.i("onItemSelected: selected $position")
                 }
 
@@ -71,7 +71,7 @@ class MainFragment : Fragment() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.dataloaded.collect { dataAvailable ->
                     if (dataAvailable) {
-                        val curCurrency = viewModel.curCurrency.value
+                        val curCurrency = viewModel.fromCurrency.value
                         viewModel.allCurrencies.value.forEachIndexed { index, currencyModel ->
                             if (currencyModel == curCurrency) {
                                 binding.currencySpinner.adapter =

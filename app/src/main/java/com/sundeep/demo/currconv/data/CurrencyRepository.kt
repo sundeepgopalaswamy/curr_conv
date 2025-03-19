@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.Flow
 interface CurrencyRepository {
     fun getAllCurrencies(): Flow<List<CurrencyModel>>
     fun getConversions(currency: CurrencyModel): Flow<List<ConversionPairModel>>
-    fun setDefaultCurrency(currency: CurrencyModel)
-    fun getDefaultCurrency(): Flow<CurrencyModel?>
+    fun setFromCurrency(currency: CurrencyModel)
+    fun getFromCurrency(): Flow<CurrencyModel?>
+    fun setToCurrency(currency: CurrencyModel)
+    fun getToCurrency(): Flow<CurrencyModel?>
 }

@@ -1,6 +1,8 @@
 package com.sundeep.demo.currconv.data.datasource
 
 interface PreferencesDataSource {
-    fun getDefaultCurrency(): String?
-    fun setDefaultCurrency(currency: String)
+    fun getFromCurrency(): String?
+    fun setFromCurrency(currency: String)
+    fun getToCurrency(): String?
+    fun setToCurrency(currency: String)
 }

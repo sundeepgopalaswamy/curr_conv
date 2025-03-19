@@ -35,9 +35,8 @@ suspend fun fetchCurrenciesFromNetworkToDB(
     unformattedCurrencies.forEach { rawData ->
         allCurrencies.add(CurrencyModel(rawData[0], rawData[1], rawData[2]))
     }
-    allCurrencies.sortedBy { it.name }
 
     withContext(Dispatchers.IO) { database.currencyDao.insertAllCurrencies(allCurrencies) }
     Timber.i("Inserted currencies to DB")
-    return allCurrencies
+    return allCurrencies.sortedBy { it.name }
 }

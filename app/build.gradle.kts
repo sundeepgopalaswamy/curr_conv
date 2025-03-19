@@ -78,6 +78,7 @@ dependencies {
     implementation(libs.androidx.work.testing)
     implementation(libs.androidx.hilt.common)
     implementation(libs.androidx.hilt.work)
+    implementation(libs.androidx.material3.window.size)
     testImplementation(libs.junit)
     testImplementation(libs.jetbrains.kotlinx.coroutines.test)
     annotationProcessor(libs.glide.compiler)
