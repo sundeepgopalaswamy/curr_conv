@@ -17,7 +17,8 @@ class HiltApplication : Application(), Configuration.Provider {
         Timber.plant(Timber.DebugTree())
     }
 
-    override fun getWorkManagerConfiguration(): Configuration {
-        return Configuration.Builder().setWorkerFactory(workerFactory).build()
-    }
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
 }

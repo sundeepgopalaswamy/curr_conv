@@ -111,26 +111,17 @@ class DefaultCurrencyRepository @Inject constructor(
         }
     }
 
-    private fun getCurrencyModel(currAbb: String): CurrencyModel? {
-        // TODO: Improve search logic to better than Linear.
-        currencies.forEach {
-            if (it.abb == currAbb) {
-                return it
-            }
-        }
-        return null
-    }
+    private fun getCurrencyModel(currAbb: String): CurrencyModel? =
+        currencies.filter { it.abb == currAbb }.firstOrNull()
+
 
     private suspend fun FlowCollector<List<ConversionPairModel>>.emitConversionsFromMap(
         currency: CurrencyModel
     ) {
         allConversions[currency]?.let { conversionMap ->
             Timber.i("Emitting ${conversionMap.size} conversions from Map for ${currency.name}")
-            val conversions = mutableListOf<ConversionPairModel>()
-            conversionMap.forEach { (toCur, rate) ->
-                conversions.add(ConversionPairModel(toCur, rate))
-            }
-            emit(conversions.sortedBy { it.toCurrency.name })
+            emit(conversionMap.map { ConversionPairModel(it.key, it.value) }
+                .sortedBy { it.toCurrency.name })
         }
     }
 

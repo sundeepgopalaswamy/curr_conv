@@ -124,23 +124,14 @@ class MainViewModel @Inject constructor(@get:VisibleForTesting(otherwise = Visib
         fromCurrencyAmount.update { newValue * (1 / curConverterValue) }
     }
 
-    private fun getCurrencyModel(currencyCode: String): CurrencyModel? {
-        allCurrencies.value.forEach { currencyModel ->
-            if (currencyModel.abb == currencyCode) {
-                return currencyModel
-            }
-        }
-        return null
-    }
+    private fun getCurrencyModel(currencyCode: String): CurrencyModel? =
+        allCurrencies.value.filter { it.abb == currencyCode }.firstOrNull()
 
-    private fun resetToCurrencyAmount() {
-        // TODO: Improve search logic to be better than linear
-        conversions.value.forEach { conversionPair ->
-            if (conversionPair.toCurrency == toCurrency.value) {
+
+    private fun resetToCurrencyAmount() =
+        conversions.value.filter { it.toCurrency == toCurrency.value }.firstOrNull()
+            ?.let { conversionPair ->
                 toCurrencyAmount.value = fromCurrencyAmount.value * conversionPair.rate
                 curConverterValue = conversionPair.rate
-                return@forEach
             }
-        }
-    }
 }
